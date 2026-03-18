@@ -1,0 +1,103 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique user ID" },
+        "email": { "type": "string", "format": "email", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "phoneNumber": { "type": "string", "description": "User phone number" },
+        "role": { "type": "string", "enum": ["customer", "rider", "admin", "merchant"], "description": "User role" },
+        "ghanaCardFront": { "type": "string", "description": "URL or base64 of Ghana Card front" },
+        "ghanaCardBack": { "type": "string", "description": "URL or base64 of Ghana Card back" }
+      },
+      "required": ["uid", "role"]
+    },
+    "Station": {
+      "title": "Station",
+      "description": "Fuel station or service hub",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "rating": { "type": "number" },
+        "deliveryTime": { "type": "string" },
+        "deliveryFee": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "categories": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["name", "imageUrl"]
+    },
+    "Service": {
+      "title": "Service",
+      "description": "Fuel or car service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "stationId": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string", "enum": ["Fuel", "Additives", "Emergency"] }
+      },
+      "required": ["stationId", "name", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Gas delivery order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Order ID" },
+        "customerId": { "type": "string", "description": "Customer UID" },
+        "customerName": { "type": "string", "description": "Customer display name" },
+        "customerPhone": { "type": "string", "description": "Customer phone number" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "in-transit", "delivered", "cancelled"], "description": "Order status" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "address": { "type": "string" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "price": { "type": "number" },
+              "quantity": { "type": "number" },
+              "type": { "type": "string" }
+            }
+          }
+        },
+        "totalPrice": { "type": "number", "description": "Total price including delivery fee" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Order creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Order update timestamp" },
+        "stationId": { "type": "string" },
+        "stationName": { "type": "string" },
+        "riderId": { "type": "string", "description": "Assigned rider UID" },
+        "riderLocation": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        }
+      },
+      "required": ["customerId", "status", "location", "items", "totalPrice", "createdAt", "stationId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/stations/{stationId}": { "schema": "Station", "description": "Fuel stations" },
+    "/stations/{stationId}/services/{serviceId}": { "schema": "Service", "description": "Services offered by station" },
+    "/orders/{orderId}": { "schema": "Order", "description": "Delivery orders" }
+  }
+}

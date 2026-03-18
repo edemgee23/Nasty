@@ -1,0 +1,5 @@
+{
+  "name": "Flash Delivery",
+  "description": "On-demand gas delivery service with rapid refueling.",
+  "requestFramePermissions": ["geolocation"]
+}

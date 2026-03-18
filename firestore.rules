@@ -1,0 +1,157 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required) - Unique user ID
+    //   - email: string (optional, email format) - User email address
+    //   - displayName: string (optional) - User display name
+    //   - phoneNumber: string (optional) - User phone number
+    //   - role: string (required, enum: ['customer', 'rider', 'admin', 'merchant']) - User role
+    //   - ghanaCardFront: string (optional) - URL or base64 of Ghana Card front
+    //   - ghanaCardBack: string (optional) - URL or base64 of Ghana Card back
+    //
+    // Collection: orders
+    // Document ID: {orderId}
+    // Fields:
+    //   - id: string (optional) - Order ID
+    //   - customerId: string (required) - Customer UID
+    //   - customerName: string (optional) - Customer display name
+    //   - customerPhone: string (optional) - Customer phone number
+    //   - status: string (required, enum: ['pending', 'confirmed', 'in-transit', 'delivered', 'cancelled']) - Order status
+    //   - location: map (required) - {lat: number, lng: number, address: string}
+    //   - gasType: string (required) - Type of gas ordered
+    //   - amount: number (required) - Amount in gallons
+    //   - totalPrice: number (required) - Total price including delivery fee
+    //   - createdAt: string (required, date-time format) - Order creation timestamp
+    //   - updatedAt: string (optional, date-time format) - Order update timestamp
+    //   - riderId: string (optional) - Assigned rider UID
+    //   - riderLocation: map (optional) - {lat: number, lng: number}
+    //
+    // Collection: gasPrices
+    // Document ID: {type}
+    // Fields:
+    //   - type: string (required) - Gas type
+    //   - price: number (required) - Price per gallon
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && resource != null && request.auth.uid == resource.data.customerId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+             request.auth.token.email == "berryedem1@gmail.com" && 
+             request.auth.token.email_verified == true;
+    }
+
+    function isRider() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'rider';
+    }
+
+    function isMerchant() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'merchant';
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'phoneNumber', 'role', 'isOnline', 'ghanaCardFront', 'ghanaCardBack']) &&
+             data.uid is string && data.uid.size() > 0 &&
+             (!('email' in data) || isValidEmail(data.email)) &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() < 20)) &&
+             data.role in ['customer', 'rider', 'admin', 'merchant'] &&
+             (!('isOnline' in data) || data.isOnline is bool) &&
+             (!('ghanaCardFront' in data) || (data.ghanaCardFront is string && data.ghanaCardFront.size() < 2000)) &&
+             (!('ghanaCardBack' in data) || (data.ghanaCardBack is string && data.ghanaCardBack.size() < 2000));
+    }
+
+    function isValidOrder(data) {
+      return hasOnlyAllowedFields(['id', 'customerId', 'customerName', 'customerPhone', 'status', 'location', 'gasType', 'amount', 'totalPrice', 'createdAt', 'updatedAt', 'riderId', 'riderLocation']) &&
+             data.customerId is string &&
+             data.status in ['pending', 'confirmed', 'in-transit', 'delivered', 'cancelled'] &&
+             data.location is map && data.location.lat is number && data.location.lng is number && data.location.address is string &&
+             data.gasType is string &&
+             data.amount is number && data.amount > 0 &&
+             data.totalPrice is number && data.totalPrice > 0 &&
+             isValidDateString(data.createdAt) &&
+             (!('updatedAt' in data) || isValidDateString(data.updatedAt)) &&
+             (!('riderId' in data) || data.riderId is string) &&
+             (!('riderLocation' in data) || (data.riderLocation is map && data.riderLocation.lat is number && data.riderLocation.lng is number));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow get: if isAuthenticated() && request.auth.uid == userId;
+      allow list: if isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == userId && isValidUser(request.resource.data);
+      allow update: if isAuthenticated() && (
+        (request.auth.uid == userId && isValidUser(request.resource.data)) || 
+        isAdmin()
+      );
+    }
+
+    match /stations/{stationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /services/{serviceId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    match /orders/{orderId} {
+      allow read: if isDocOwner() || isRider() || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.customerId == request.auth.uid && request.resource.data.status == 'pending';
+      allow update: if isAuthenticated() && (
+        (isDocOwner() && request.resource.data.status == 'cancelled' && resource.data.status == 'pending') ||
+        (isRider() && request.resource.data.customerId == resource.data.customerId) ||
+        isAdmin()
+      );
+    }
+  }
+}
