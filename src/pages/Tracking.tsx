@@ -210,7 +210,10 @@ export default function Tracking({ user }: TrackingProps) {
                 order.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-start text-sm">
                     <div className="text-stone-600 font-medium">
-                      <span>{item.quantity}x {item.name}</span>
+                      <span>{item.name}</span>
+                      {item.type === 'fuel' && (
+                        <span className="text-[10px] block opacity-60 italic">≈ {item.quantity.toFixed(2)} Litres</span>
+                      )}
                     </div>
                     <span className="text-black font-bold">GH₵{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
@@ -218,12 +221,8 @@ export default function Tracking({ user }: TrackingProps) {
               ) : (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-stone-600 font-medium">Fuel Type</span>
-                    <span className="text-black font-bold">{order.gasType}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
                     <span className="text-stone-600 font-medium">Amount</span>
-                    <span className="text-black font-bold">{order.amount} Litres</span>
+                    <span className="text-black font-bold">GH₵{order.totalPrice.toFixed(2)}</span>
                   </div>
                 </>
               )}

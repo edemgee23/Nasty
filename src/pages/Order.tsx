@@ -26,7 +26,7 @@ export default function Order({ user }: OrderProps) {
 
   // Default to a fuel order setup
   const [selectedGas] = useState(DEFAULT_GAS);
-  const [amount, setAmount] = useState(10);
+  const [ghcAmount, setGhcAmount] = useState(100);
 
   const handleLocate = () => {
     setIsLocating(true);
@@ -44,7 +44,8 @@ export default function Order({ user }: OrderProps) {
     }
   };
 
-  const subtotal = amount * selectedGas.price;
+  const subtotal = ghcAmount;
+  const litres = ghcAmount / selectedGas.price;
 
   const deliveryFee = 15.00;
   const total = subtotal + deliveryFee;
@@ -61,7 +62,7 @@ export default function Order({ user }: OrderProps) {
         id: selectedGas.id,
         name: selectedGas.name,
         price: selectedGas.price,
-        quantity: amount,
+        quantity: litres,
         type: 'fuel' as const
       }];
 
@@ -138,20 +139,22 @@ export default function Order({ user }: OrderProps) {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Amount (Litres)</span>
+              <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Amount (GH₵)</span>
               <div className="flex items-center gap-2">
                 <input 
                   type="number" 
                   min="1" 
-                  max="500" 
-                  value={amount} 
-                  onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                  className="w-24 bg-stone-100 border-none rounded-xl px-3 py-2 text-right font-black text-primary outline-none focus:ring-2 focus:ring-primary transition-all"
+                  value={ghcAmount} 
+                  onChange={(e) => setGhcAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                  className="w-32 bg-stone-100 border-none rounded-xl px-3 py-2 text-right font-black text-primary outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
-                <span className="font-black text-stone-900">L</span>
+                <span className="font-black text-stone-900">GH₵</span>
               </div>
             </div>
-            <p className="text-[10px] text-stone-400 font-medium">Enter the exact amount of fuel you need.</p>
+            <div className="flex justify-between items-center">
+              <p className="text-[10px] text-stone-400 font-medium">Enter the amount of money you want to spend.</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest italic">≈ {litres.toFixed(2)} L</p>
+            </div>
           </div>
 
           <div className="bg-stone-50 rounded-3xl border border-stone-200 overflow-hidden">
