@@ -61,25 +61,31 @@ export default function ChatBot() {
   return (
     <>
       {/* Floating Toggle Button */}
-      <button
+      <motion.button
+        drag
+        dragMomentum={false}
+        dragConstraints={{ left: -window.innerWidth + 80, right: 0, top: 0, bottom: window.innerHeight - 160 }}
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group"
+        className="fixed top-20 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group cursor-grab active:cursor-grabbing"
       >
         <MessageSquare size={24} className="group-hover:rotate-12 transition-transform" />
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full border-2 border-white animate-pulse"></div>
-      </button>
+      </motion.button>
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.8 }}
+            drag
+            dragHandleSelector=".chat-header"
+            dragMomentum={false}
+            initial={{ opacity: 0, y: -100, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.8 }}
-            className="fixed bottom-24 right-6 w-[350px] h-[500px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden z-50 border border-stone-100"
+            exit={{ opacity: 0, y: -100, scale: 0.8 }}
+            className="fixed top-36 right-6 w-[350px] h-[500px] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden z-50 border border-stone-100"
           >
             {/* Header */}
-            <div className="bg-stone-900 p-4 flex items-center justify-between text-white">
+            <div className="bg-stone-900 p-4 flex items-center justify-between text-white chat-header cursor-grab active:cursor-grabbing">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
                   <Bot size={20} className="text-primary" />

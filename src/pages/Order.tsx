@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MapPin, Fuel, CreditCard, CheckCircle, AlertCircle, ChevronRight, ShoppingBag, Trash2 } from 'lucide-react';
+import { MapPin, Fuel, CreditCard, ChevronRight, AlertCircle } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { db, collection, addDoc, OperationType, handleFirestoreError } from '../firebase';
@@ -11,11 +11,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const GAS_TYPES = [
-  { id: 'regular', name: 'Regular (87)', price: 3.45 },
-  { id: 'premium', name: 'Premium (93)', price: 4.12 },
-  { id: 'diesel', name: 'Diesel', price: 3.89 },
-];
+const DEFAULT_GAS = { id: 'fuel', name: 'Fuel', price: 14.85 };
 
 interface OrderProps {
   user: User | null;
@@ -23,15 +19,13 @@ interface OrderProps {
 
 export default function Order({ user }: OrderProps) {
   const navigate = useNavigate();
-  const routerLocation = useLocation();
   const [step, setStep] = useState(1);
-  const [cart, setCart] = useState<CartItem[]>(routerLocation.state?.cart || []);
   const [location, setLocation] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If no cart, default to a quick fuel order setup
-  const [selectedGas, setSelectedGas] = useState(GAS_TYPES[0]);
+  // Default to a fuel order setup
+  const [selectedGas] = useState(DEFAULT_GAS);
   const [amount, setAmount] = useState(10);
 
   const handleLocate = () => {
@@ -50,11 +44,9 @@ export default function Order({ user }: OrderProps) {
     }
   };
 
-  const subtotal = cart.length > 0 
-    ? cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    : amount * selectedGas.price;
+  const subtotal = amount * selectedGas.price;
 
-  const deliveryFee = 5.00;
+  const deliveryFee = 15.00;
   const total = subtotal + deliveryFee;
 
   const handleSubmitOrder = async () => {
@@ -65,7 +57,7 @@ export default function Order({ user }: OrderProps) {
 
     setIsSubmitting(true);
     try {
-      const items = cart.length > 0 ? cart : [{
+      const items = [{
         id: selectedGas.id,
         name: selectedGas.name,
         price: selectedGas.price,
@@ -87,8 +79,8 @@ export default function Order({ user }: OrderProps) {
         totalPrice: total,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        stationId: cart[0]?.stationId || 'default-hub',
-        stationName: cart[0]?.stationId ? 'Flash Hub Central' : 'Flash Delivery Hub'
+        stationId: 'default-hub',
+        stationName: 'Flash Delivery Hub'
       };
 
       const docRef = await addDoc(collection(db, 'orders'), orderData);
@@ -98,10 +90,6 @@ export default function Order({ user }: OrderProps) {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const removeItem = (id: string) => {
-    setCart(prev => prev.filter(item => item.id !== id));
   };
 
   return (
@@ -149,70 +137,41 @@ export default function Order({ user }: OrderProps) {
           </div>
 
           <div className="space-y-4">
-            <label className="block text-xs font-black text-stone-400 uppercase tracking-widest">Order Summary</label>
-            <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden">
-              {cart.length > 0 ? (
-                <div className="divide-y divide-stone-100">
-                  {cart.map((item) => (
-                    <div key={item.id} className="p-4 flex items-center justify-between group">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-stone-50 rounded-lg flex items-center justify-center text-stone-600 font-black text-xs">
-                          {item.quantity}x
-                        </div>
-                        <div>
-                          <p className="font-bold text-stone-900">{item.name}</p>
-                          <p className="text-xs text-stone-500">${item.price.toFixed(2)} each</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="font-black text-stone-900">${(item.price * item.quantity).toFixed(2)}</span>
-                        <button onClick={() => removeItem(item.id)} className="text-stone-300 hover:text-red-500 transition-colors">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-6 space-y-6">
-                  <div className="flex items-center gap-3 text-stone-500">
-                    <ShoppingBag size={20} />
-                    <p className="text-sm font-bold">Quick Fuel Order (No items in cart)</p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    {GAS_TYPES.map((gas) => (
-                      <button
-                        key={gas.id}
-                        onClick={() => setSelectedGas(gas)}
-                        className={cn(
-                          "flex items-center justify-between p-4 rounded-2xl border-2 transition-all",
-                          selectedGas.id === gas.id ? "border-primary bg-primary/5" : "border-stone-100"
-                        )}
-                      >
-                        <span className="font-bold">{gas.name}</span>
-                        <span className="text-xs font-bold text-stone-500">${gas.price}/gal</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Amount</span>
-                      <span className="font-black text-primary">{amount} gal</span>
-                    </div>
-                    <input 
-                      type="range" min="5" max="30" value={amount} 
-                      onChange={(e) => setAmount(parseInt(e.target.value))}
-                      className="w-full h-2 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-primary"
-                    />
-                  </div>
-                </div>
-              )}
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Amount (Litres)</span>
+              <div className="flex items-center gap-2">
+                <input 
+                  type="number" 
+                  min="1" 
+                  max="500" 
+                  value={amount} 
+                  onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                  className="w-24 bg-stone-100 border-none rounded-xl px-3 py-2 text-right font-black text-primary outline-none focus:ring-2 focus:ring-primary transition-all"
+                />
+                <span className="font-black text-stone-900">L</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-stone-400 font-medium">Enter the exact amount of fuel you need.</p>
+          </div>
+
+          <div className="bg-stone-50 rounded-3xl border border-stone-200 overflow-hidden">
+            <div className="p-4 flex justify-between items-center">
+              <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Subtotal</span>
+              <span className="font-black text-stone-900">GH₵{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="p-4 border-t border-stone-100 flex justify-between items-center">
+              <span className="text-xs font-black text-stone-400 uppercase tracking-widest">Delivery Fee</span>
+              <span className="font-black text-stone-900">GH₵{deliveryFee.toFixed(2)}</span>
+            </div>
+            <div className="p-4 bg-primary/5 border-t border-stone-100 flex justify-between items-center">
+              <span className="text-sm font-black text-stone-900 uppercase tracking-widest">Estimated Total</span>
+              <span className="text-xl font-black text-primary italic">GH₵{total.toFixed(2)}</span>
             </div>
           </div>
 
           <button 
             onClick={() => setStep(2)}
-            disabled={!location || (cart.length === 0 && !selectedGas)}
+            disabled={!location || !selectedGas}
             className="w-full bg-primary hover:bg-primary/90 disabled:bg-stone-300 text-white py-4 rounded-2xl font-black text-lg transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
           >
             Continue to Payment <ChevronRight size={20} />
@@ -231,16 +190,16 @@ export default function Order({ user }: OrderProps) {
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm opacity-60 font-bold">
                 <span>Items Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>GH₵{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-sm opacity-60 font-bold">
                 <span>Delivery Fee</span>
-                <span>${deliveryFee.toFixed(2)}</span>
+                <span>GH₵{deliveryFee.toFixed(2)}</span>
               </div>
               <div className="h-px bg-white/10 my-2"></div>
               <div className="flex justify-between items-center">
                 <span className="font-black uppercase tracking-widest text-sm">Total Amount</span>
-                <span className="text-3xl font-black text-accent italic">${total.toFixed(2)}</span>
+                <span className="text-3xl font-black text-accent italic">GH₵{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -270,7 +229,7 @@ export default function Order({ user }: OrderProps) {
               {isSubmitting ? (
                 <div className="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               ) : (
-                `Confirm & Pay $${total.toFixed(2)}`
+                `Confirm & Pay GH₵${total.toFixed(2)}`
               )}
             </button>
             

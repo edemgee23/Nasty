@@ -37,7 +37,6 @@ export default function Layout({ children, user }: LayoutProps) {
     { icon: Home, label: 'Home', path: user ? '/dashboard' : '/' },
     { icon: ShoppingCart, label: 'Order', path: '/order' },
     { icon: MapPin, label: 'Tracking', path: '/tracking/active', hidden: !user },
-    { icon: Settings, label: 'Admin', path: '/admin', hidden: user?.role !== 'admin' },
   ];
 
   return (
@@ -45,11 +44,10 @@ export default function Layout({ children, user }: LayoutProps) {
       {/* Header */}
       <header className="bg-white border-b border-stone-200 sticky top-0 z-50">
         <div className="max-w-md mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Zap className="text-accent fill-accent" size={20} />
-            </div>
-            <span className="font-black text-xl tracking-tighter text-stone-900 italic">FLASH DELIVERY</span>
+          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-1 group">
+            <span className="font-black text-xl tracking-tighter text-stone-900 italic">FLASH</span>
+            <Zap className="text-accent fill-accent -rotate-12 group-hover:rotate-0 transition-transform" size={24} />
+            <span className="font-black text-xl tracking-tighter text-stone-900 italic">DELIVERY</span>
           </Link>
 
           <div className="flex items-center gap-4">

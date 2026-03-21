@@ -5,7 +5,7 @@ export interface User {
   email: string | null;
   displayName: string | null;
   phoneNumber: string | null;
-  role: 'customer' | 'rider' | 'admin' | 'merchant';
+  role: 'customer' | 'rider';
   isOnline?: boolean;
   ghanaCardFront?: string;
   ghanaCardBack?: string;

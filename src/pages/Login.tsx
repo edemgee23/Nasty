@@ -49,128 +49,111 @@ export default function Login() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden">
-      {/* Animated Blurred Background */}
-      <div className="absolute inset-0 bg-stone-900">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-red-600/30 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-600/30 rounded-full blur-[120px] animate-pulse delay-700"></div>
-        <div className="absolute top-[20%] right-[10%] w-[40%] h-[40%] bg-orange-500/20 rounded-full blur-[100px] animate-pulse delay-1000"></div>
-        <div className="absolute bottom-[20%] left-[10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[100px] animate-pulse delay-500"></div>
-      </div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white">
+      {/* Minimal Header */}
+      <header className="absolute top-0 left-0 right-0 p-6 flex items-center justify-between">
+        <div className="text-2xl font-bold tracking-tighter text-black">FLASH</div>
+        <button 
+          onClick={() => navigate('/')}
+          className="text-sm font-bold text-black hover:underline"
+        >
+          Close
+        </button>
+      </header>
 
-      {/* Back Button */}
-      <button 
-        onClick={() => navigate('/')}
-        className="absolute top-8 left-8 text-white/60 hover:text-white flex items-center gap-2 transition-colors z-10"
-      >
-        <ChevronLeft size={20} />
-        <span className="font-bold uppercase tracking-widest text-xs">Back to Home</span>
-      </button>
-
-      {/* Login Card */}
+      {/* Login Form */}
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative w-full max-w-[260px] px-4"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md px-6 space-y-8"
       >
-        {/* Avatar Circle */}
-        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-primary rounded-full flex items-center justify-center border-[10px] border-stone-900/20 backdrop-blur-3xl z-20 shadow-2xl">
-          <User size={32} className="text-white" />
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-black">Welcome back</h1>
+          <p className="text-stone-500 font-medium">Sign in with your email address or Google account.</p>
         </div>
 
-        {/* Glass Card */}
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 pt-14 shadow-2xl overflow-hidden">
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-xs text-red-200 text-center font-medium">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Input */}
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-white/10 text-white/40 group-focus-within:text-primary transition-colors">
-                <Mail size={16} />
-              </div>
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600 font-medium">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Email</label>
               <input 
                 type="email" 
-                placeholder="Email ID"
+                placeholder="Enter email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-14 pr-4 py-3.5 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all font-medium"
+                className="w-full bg-stone-100 border-none rounded-lg px-4 py-4 text-black placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-black transition-all font-medium"
                 required
               />
             </div>
 
-            {/* Password Input */}
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 w-10 flex items-center justify-center border-r border-white/10 text-white/40 group-focus-within:text-primary transition-colors">
-                <Lock size={16} />
-              </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Password</label>
               <input 
                 type="password" 
-                placeholder="Password"
+                placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl pl-14 pr-4 py-3.5 text-sm text-white placeholder:text-white/40 outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all font-medium"
+                className="w-full bg-stone-100 border-none rounded-lg px-4 py-4 text-black placeholder:text-stone-400 outline-none focus:ring-2 focus:ring-black transition-all font-medium"
                 required
               />
             </div>
+          </div>
 
-            {/* Options */}
-            <div className="flex items-center justify-between text-[10px] font-bold">
-              <label className="flex items-center gap-2 text-white/60 cursor-pointer hover:text-white transition-colors">
-                <input 
-                  type="checkbox" 
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded bg-white/10 border-white/20 text-primary focus:ring-primary focus:ring-offset-0"
-                />
-                Remember me
-              </label>
-              <button 
-                type="button" 
-                onClick={() => alert('Password reset link sent to your email')}
-                className="text-white/40 hover:text-white transition-colors italic"
-              >
-                Forgot Password?
-              </button>
-            </div>
-
-            {/* Login Button */}
+          <div className="flex items-center justify-between py-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-stone-600 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black"
+              />
+              Remember me
+            </label>
             <button 
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-primary/90 text-white py-3.5 rounded-xl font-black uppercase tracking-[0.2em] text-sm shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button" 
+              onClick={() => alert('Password reset link sent to your email')}
+              className="text-sm font-bold text-black hover:underline"
             >
-              {loading ? 'LOGGING IN...' : 'LOGIN'}
+              Forgot Password?
             </button>
+          </div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 py-1">
-              <div className="flex-1 h-px bg-white/10"></div>
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-widest">OR</span>
-              <div className="flex-1 h-px bg-white/10"></div>
-            </div>
-
-            {/* Google Login */}
-            <button 
-              type="button"
-              onClick={handleGoogleLogin}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-3 transition-all"
-            >
-              <Chrome size={18} />
-              <span>Sign in with Google</span>
-            </button>
-          </form>
-        </div>
-
-        {/* Footer Link */}
-        <p className="mt-8 text-center text-sm text-white/40 font-medium">
-          Don't have an account? <button 
-            onClick={() => navigate('/signup-category')}
-            className="text-accent font-bold hover:underline"
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
           >
-            Sign Up
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          <div className="flex items-center gap-4 py-2">
+            <div className="flex-1 h-px bg-stone-200"></div>
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">or</span>
+            <div className="flex-1 h-px bg-stone-200"></div>
+          </div>
+
+          <button 
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full bg-white border border-stone-200 text-black py-4 rounded-lg font-bold text-lg flex items-center justify-center gap-3 hover:bg-stone-50 transition-all active:scale-95"
+          >
+            <Chrome size={20} />
+            <span>Continue with Google</span>
+          </button>
+        </form>
+
+        <p className="text-center text-stone-500 font-medium pt-4">
+          New to Flash? <button 
+            onClick={() => navigate('/signup-category')}
+            className="text-black font-bold hover:underline"
+          >
+            Create an account
           </button>
         </p>
       </motion.div>

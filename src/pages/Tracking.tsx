@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { MapPin, Truck, Phone, MessageSquare, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { MapPin, Truck, Phone, MessageSquare, Clock, CheckCircle, AlertTriangle, ChevronLeft } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { db, doc, onSnapshot, OperationType, handleFirestoreError } from '../firebase';
@@ -24,6 +24,7 @@ interface TrackingProps {
 
 export default function Tracking({ user }: TrackingProps) {
   const { orderId } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState<AppOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export default function Tracking({ user }: TrackingProps) {
   // Mock rider data (in a real app, this would be fetched from a riders collection)
   const rider = {
     name: 'Michael Scott',
-    phone: '+1 (555) 123-4567',
+    phone: '+233 24 123 4567',
     vehicle: 'Ford F-150 (White)',
     plate: 'GAS-2024',
     rating: 4.9,
@@ -87,189 +88,151 @@ export default function Tracking({ user }: TrackingProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-      {/* Left: Map & Status */}
-      <div className="lg:col-span-2 space-y-6">
-        <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden shadow-sm h-[400px] relative">
-          <img 
-            src="https://picsum.photos/seed/tracking/1200/800" 
-            alt="Tracking Map" 
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 flex items-center justify-center">
-             <motion.div 
-               animate={{ y: [0, -10, 0] }}
-               transition={{ repeat: Infinity, duration: 2 }}
-               className="bg-primary p-3 rounded-full shadow-xl shadow-primary/40 text-white"
-             >
-               <Truck size={32} />
-             </motion.div>
-          </div>
-          
-          <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-            <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 shadow-lg">
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Order ID</p>
-              <p className="text-sm font-black text-stone-900">#{orderId?.slice(0, 8).toUpperCase() || 'GAS-8921'}</p>
-            </div>
-            <div className="bg-primary px-4 py-2 rounded-2xl shadow-lg text-white text-center">
-              <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">ETA</p>
-              <p className="text-lg font-black">{rider.eta}</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-white pb-12">
+      {/* Uber Eats Style Tracking Header */}
+      <header className="px-6 py-6 border-b border-stone-100 flex items-center justify-between bg-white sticky top-0 z-50">
+        <div className="flex items-center gap-4">
+          <button onClick={() => navigate('/dashboard')} className="text-black hover:bg-stone-100 p-2 rounded-full transition-colors">
+            <ChevronLeft size={24} />
+          </button>
+          <h1 className="text-xl font-bold text-black">Order Status</h1>
         </div>
+        <button className="text-sm font-bold text-black hover:underline">Help</button>
+      </header>
 
-        <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm relative overflow-hidden">
-          {/* Progress Bar Background */}
-          <div className="absolute top-12 left-12 right-12 h-1 bg-stone-100 rounded-full hidden sm:block" />
-          
-          {/* Active Progress Bar */}
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${(displayStepIndex / (STEPS.length - 1)) * 100}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="absolute top-12 left-12 h-1 bg-primary rounded-full hidden sm:block origin-left"
-          />
+      <div className="max-w-4xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left: Map & Status */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Status Message */}
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-black tracking-tight">
+              {order.status === 'pending' && 'Confirming your order...'}
+              {order.status === 'confirmed' && 'Preparing your order...'}
+              {order.status === 'in-transit' && 'Your rider is on the way'}
+              {order.status === 'delivered' && 'Order delivered'}
+            </h2>
+            <p className="text-stone-500 font-medium">
+              Estimated arrival: <span className="text-black font-bold">{rider.eta}</span>
+            </p>
+          </div>
 
-          <div className="relative flex justify-between items-start">
+          {/* Progress Bar */}
+          <div className="relative h-1 bg-stone-100 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${((displayStepIndex + 1) / STEPS.length) * 100}%` }}
+              className="absolute top-0 left-0 h-full bg-uber-green"
+            />
+          </div>
+
+          {/* Map View */}
+          <div className="bg-stone-100 rounded-xl overflow-hidden shadow-sm h-[400px] relative border border-stone-200">
+            <img 
+              src="https://picsum.photos/seed/tracking/1200/800" 
+              alt="Tracking Map" 
+              className="w-full h-full object-cover opacity-80"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <motion.div 
+                 animate={{ scale: [1, 1.1, 1] }}
+                 transition={{ repeat: Infinity, duration: 2 }}
+                 className="bg-black p-4 rounded-full shadow-2xl text-white"
+               >
+                 <Truck size={32} />
+               </motion.div>
+            </div>
+          </div>
+
+          {/* Status Steps List */}
+          <div className="space-y-6">
             {STEPS.map((step, i) => {
               const isCompleted = displayStepIndex > i;
               const isActive = displayStepIndex === i;
               const isPending = displayStepIndex < i;
 
               return (
-                <div key={step.id} className="flex flex-col items-center gap-3 relative z-10 flex-1">
-                  <motion.div 
-                    initial={false}
-                    animate={{ 
-                      scale: isActive ? 1.2 : 1,
-                      backgroundColor: isCompleted || isActive ? '#FF4444' : '#F5F5F4',
-                      color: isCompleted || isActive ? '#FFFFFF' : '#A8A29E'
-                    }}
-                    className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-sm",
-                      isActive && "shadow-lg shadow-primary/40 ring-4 ring-primary/20"
-                    )}
-                  >
-                    {isCompleted ? (
-                      <CheckCircle size={24} />
-                    ) : (
-                      <step.icon size={24} className={cn(isActive && "animate-pulse")} />
-                    )}
-                  </motion.div>
-                  
-                  <div className="text-center space-y-1">
+                <div key={step.id} className="flex items-center gap-4">
+                  <div className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                    isCompleted ? "bg-uber-green text-white" : 
+                    isActive ? "bg-black text-white" : "bg-stone-100 text-stone-400"
+                  )}>
+                    {isCompleted ? <CheckCircle size={20} /> : <step.icon size={20} />}
+                  </div>
+                  <div className="flex-1">
                     <p className={cn(
-                      "text-[10px] font-black uppercase tracking-widest leading-none",
-                      isPending ? "text-stone-400" : "text-stone-900"
+                      "font-bold",
+                      isPending ? "text-stone-400" : "text-black"
                     )}>
                       {step.label}
                     </p>
-                    {isActive && (
-                      <motion.span 
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-[9px] font-bold text-primary uppercase tracking-tighter"
-                      >
-                        In Progress
-                      </motion.span>
-                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-          
-          <div className="mt-10 bg-stone-50 rounded-2xl p-5 flex items-center gap-5 border border-stone-100">
-            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm border border-stone-100">
-              <Clock size={24} className="animate-spin-slow" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-black text-stone-900 uppercase tracking-widest italic">Current Stage</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              </div>
-              <p className="text-sm font-bold text-stone-700 leading-tight">
-                {order.status === 'pending' && 'Your order is being processed by our system.'}
-                {order.status === 'confirmed' && 'A rider has accepted your request and is preparing.'}
-                {order.status === 'in-transit' && 'The delivery vehicle is currently on its way to your location.'}
-                {order.status === 'delivered' && 'Delivery completed successfully. Thank you for using Flash!'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Rider Info */}
-      <div className="space-y-6">
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-stone-100 overflow-hidden border border-stone-200">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Michael" alt="rider" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-stone-900">{rider.name}</h3>
-              <div className="flex items-center gap-1 text-accent">
-                <span className="text-sm font-black">★</span>
-                <span className="text-xs font-bold text-stone-600">{rider.rating} Rating</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100">
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Vehicle</p>
-              <p className="text-xs font-bold text-stone-900">{rider.vehicle}</p>
-            </div>
-            <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100">
-              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Plate</p>
-              <p className="text-xs font-bold text-stone-900">{rider.plate}</p>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button className="flex-1 bg-primary hover:bg-primary/90 text-white p-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all">
-              <Phone size={20} /> Call
-            </button>
-            <button className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-600 p-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all">
-              <MessageSquare size={20} /> Chat
-            </button>
-          </div>
         </div>
 
-        <div className="bg-stone-900 p-6 rounded-3xl text-white space-y-4">
-          <h4 className="text-sm font-black uppercase tracking-widest italic">Order Details</h4>
-          <div className="space-y-3">
-            {order.items ? (
-              order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-start text-sm">
-                  <div className="opacity-70 font-bold">
-                    <span>{item.quantity}x {item.name}</span>
+        {/* Right: Rider & Order Info */}
+        <div className="space-y-6">
+          {/* Rider Card */}
+          <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-stone-100 overflow-hidden border border-stone-200">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Michael" alt="rider" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-black">{rider.name}</h3>
+                  <p className="text-sm text-stone-500 font-medium">{rider.vehicle}</p>
+                </div>
+              </div>
+              <div className="bg-stone-100 px-2 py-1 rounded text-xs font-bold text-black">
+                ★ {rider.rating}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button className="flex-1 bg-stone-100 hover:bg-stone-200 text-black p-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all">
+                <Phone size={20} /> Call
+              </button>
+              <button className="flex-1 bg-stone-100 hover:bg-stone-200 text-black p-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all">
+                <MessageSquare size={20} /> Message
+              </button>
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-sm space-y-4">
+            <h4 className="text-lg font-bold text-black">Order details</h4>
+            <div className="space-y-3">
+              {order.items ? (
+                order.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-start text-sm">
+                    <div className="text-stone-600 font-medium">
+                      <span>{item.quantity}x {item.name}</span>
+                    </div>
+                    <span className="text-black font-bold">GH₵{(item.price * item.quantity).toFixed(2)}</span>
                   </div>
-                  <span className="text-white font-black">${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-              ))
-            ) : (
-              <>
-                <div className="flex justify-between text-sm">
-                  <span className="opacity-70 font-bold">Fuel Type</span>
-                  <span className="text-white font-black">{order.gasType}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="opacity-70 font-bold">Amount</span>
-                  <span className="text-white font-black">{order.amount} Gallons</span>
-                </div>
-              </>
-            )}
-            <div className="h-px bg-white/10 my-2"></div>
-            <div className="flex justify-between text-sm">
-              <span className="opacity-70 font-bold">Delivery Address</span>
-              <span className="text-white font-black text-right max-w-[150px]">{order.location.address}</span>
+                ))
+              ) : (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-stone-600 font-medium">Fuel Type</span>
+                    <span className="text-black font-bold">{order.gasType}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-stone-600 font-medium">Amount</span>
+                    <span className="text-black font-bold">{order.amount} Litres</span>
+                  </div>
+                </>
+              )}
+              <div className="h-px bg-stone-100 my-2"></div>
+              <div className="flex justify-between text-sm">
+                <span className="text-stone-600 font-medium">Total</span>
+                <span className="text-black font-bold text-lg">GH₵{order.totalPrice.toFixed(2)}</span>
+              </div>
             </div>
-          </div>
-          <div className="h-px bg-white/10"></div>
-          <div className="flex justify-between items-center">
-            <span className="font-black uppercase tracking-widest text-xs">Total Paid</span>
-            <span className="text-2xl font-black text-accent italic">${order.totalPrice.toFixed(2)}</span>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ import {
   Fuel, ShoppingBag, ArrowRight, Zap, Clock, MapPin, 
   ChevronRight, CheckCircle2, XCircle, Power, Truck, 
   Navigation, Star, Wallet, Menu, User as UserIcon, 
-  Bell, Settings, Layers, Map as MapIcon, Store, Shield
+  Bell, Settings, Layers, Map as MapIcon, Store, Shield, Search
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -49,7 +49,7 @@ const MOCK_RIDER_ORDERS = [
     id: 'FL-9001',
     customer: 'Alice Johnson',
     address: '742 Evergreen Terrace',
-    type: 'Premium Fuel',
+    type: 'Fuel',
     amount: '45L',
     status: 'pending',
     distance: '1.2 km',
@@ -59,7 +59,7 @@ const MOCK_RIDER_ORDERS = [
     id: 'FL-9002',
     customer: 'Bob Smith',
     address: '123 Maple St',
-    type: 'Regular Fuel',
+    type: 'Fuel',
     amount: '30L',
     status: 'confirmed',
     distance: '2.8 km',
@@ -124,7 +124,7 @@ export default function Dashboard({ user }: DashboardProps) {
               <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">Earnings</span>
               <div className="flex items-center gap-1">
                 <Wallet size={14} className="text-accent" />
-                <span className="text-lg font-black tracking-tight italic">$142.50</span>
+                <span className="text-lg font-black tracking-tight italic">GH₵142.50</span>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function Dashboard({ user }: DashboardProps) {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-black text-accent italic leading-none mb-1">${order.price.toFixed(2)}</p>
+                          <p className="text-xl font-black text-accent italic leading-none mb-1">GH₵{order.price.toFixed(2)}</p>
                           <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest">Est. Payout</p>
                         </div>
                       </div>
@@ -247,7 +247,7 @@ export default function Dashboard({ user }: DashboardProps) {
                         </button>
                         <button 
                           onClick={() => navigate(`/tracking/${order.id}`)}
-                          className="bg-accent hover:bg-accent/90 text-stone-950 font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all shadow-lg shadow-accent/20"
+                          className="bg-primary hover:bg-primary/90 text-white font-black text-xs uppercase tracking-widest py-4 rounded-2xl transition-all shadow-lg shadow-primary/20"
                         >
                           Accept
                         </button>
@@ -285,7 +285,7 @@ export default function Dashboard({ user }: DashboardProps) {
             className={`w-full py-5 rounded-[2rem] font-black text-lg uppercase tracking-[0.2em] italic transition-all shadow-2xl flex items-center justify-center gap-3 ${
               user.isOnline 
                 ? 'bg-stone-800 text-stone-400 border border-white/5' 
-                : 'bg-accent text-stone-950 shadow-accent/20'
+                : 'bg-primary text-white shadow-primary/20'
             }`}
           >
             {user.isOnline ? (
@@ -318,62 +318,6 @@ export default function Dashboard({ user }: DashboardProps) {
     );
   }
 
-  if (user?.role === 'merchant') {
-    return (
-      <div className="space-y-8">
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-stone-900 tracking-tighter italic uppercase">Merchant <span className="text-emerald-600">Dashboard</span></h1>
-            <p className="text-stone-500 font-medium">Manage your shop and fulfill customer orders.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Store Status</p>
-              <p className="text-sm font-black text-emerald-700 uppercase">Open & Active</p>
-            </div>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { label: 'Today\'s Orders', value: '12', icon: ShoppingBag, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'Pending Prep', value: '3', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-            { label: 'Total Sales', value: '$420.50', icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
-            { label: 'Store Rating', value: '4.8', icon: Star, color: 'text-accent', bg: 'bg-accent/10' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-white p-6 rounded-3xl border border-stone-200 shadow-sm flex items-center gap-4">
-              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", stat.bg, stat.color)}>
-                <stat.icon size={24} />
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">{stat.label}</p>
-                <p className="text-2xl font-black text-stone-900">{stat.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-[2.5rem] border border-stone-200 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-stone-100 flex items-center justify-between">
-            <h2 className="text-xl font-black text-stone-900 uppercase tracking-tight italic">Active Orders</h2>
-            <button 
-              onClick={() => alert('Full order history coming soon')}
-              className="text-emerald-600 font-bold text-sm hover:underline"
-            >
-              View All
-            </button>
-          </div>
-          <div className="p-8 text-center space-y-4">
-            <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto text-stone-300">
-              <ShoppingBag size={40} />
-            </div>
-            <p className="text-stone-500 font-medium">No new orders at the moment. We'll notify you when someone buys from your shop!</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const actions = [
     {
       id: 'gas',
@@ -384,152 +328,75 @@ export default function Dashboard({ user }: DashboardProps) {
       color: 'bg-primary',
       textColor: 'text-white',
       accent: 'text-accent'
-    },
-    {
-      id: 'store',
-      title: 'Shop Store',
-      description: 'Browse nearby stations for snacks, additives, and car care.',
-      icon: ShoppingBag,
-      path: '/',
-      color: 'bg-stone-900',
-      textColor: 'text-white',
-      accent: 'text-primary'
     }
   ];
 
   return (
-    <div className="space-y-10 pb-10">
-      {/* Welcome Header */}
-      <section className="space-y-2">
-        <motion.h1 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="text-4xl font-black text-stone-900 tracking-tighter italic uppercase"
-        >
-          Welcome back, <span className="text-primary">{user?.displayName?.split(' ')[0] || 'Flash'}</span>
-        </motion.h1>
-        <p className="text-stone-500 font-medium">What would you like to do today?</p>
-      </section>
-
-      {/* Main Actions */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {actions.map((action, i) => (
-          <motion.button
-            key={action.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            onClick={() => navigate(action.path)}
-            className={`group relative overflow-hidden rounded-[2.5rem] p-8 text-left transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl ${action.color} ${action.textColor}`}
-          >
-            <div className="relative z-10 space-y-6">
-              <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
-                <action.icon size={32} />
+    <div className="min-h-screen bg-white pb-24">
+      <main className="max-w-4xl mx-auto px-4 py-6 space-y-8">
+        {/* Horizontal Categories */}
+        <section className="flex gap-6 overflow-x-auto no-scrollbar pb-2">
+          {[
+            { name: 'Fuel', icon: Fuel, color: 'bg-stone-100' },
+            { name: 'Emergency', icon: Clock, color: 'bg-stone-100' },
+            { name: 'Offers', icon: Zap, color: 'bg-stone-100' },
+          ].map((cat) => (
+            <button key={cat.name} className="flex flex-col items-center gap-2 min-w-[70px]">
+              <div className={cn("w-16 h-16 rounded-lg flex items-center justify-center", cat.color)}>
+                <cat.icon size={28} className="text-black" />
               </div>
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black tracking-tighter italic uppercase leading-none">
-                  {action.title}
-                </h2>
-                <p className="opacity-60 font-medium max-w-[240px] text-sm leading-relaxed">
-                  {action.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 font-black text-xs uppercase tracking-widest pt-2">
-                <span>Request Now</span>
-                <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
-              </div>
-            </div>
-
-            {/* Background Decorative Icon */}
-            <action.icon 
-              size={200} 
-              className={`absolute -right-10 -bottom-10 opacity-5 rotate-12 group-hover:rotate-0 transition-transform duration-700 ${action.accent}`} 
-            />
-          </motion.button>
-        ))}
-      </section>
-
-      {/* Recent Activity / Quick Stats */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
-            <Zap size={24} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Flash Points</p>
-            <p className="text-xl font-black text-stone-900">1,250</p>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-            <Clock size={24} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Last Order</p>
-            <p className="text-xl font-black text-stone-900">2 days ago</p>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-3xl border border-stone-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
-            <MapPin size={24} />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Saved Locations</p>
-            <p className="text-xl font-black text-stone-900">3</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Order History */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-black text-stone-900 tracking-tight uppercase italic">Order History</h2>
-          <button 
-            onClick={() => alert('Full history coming soon')}
-            className="text-primary font-bold text-sm hover:underline"
-          >
-            View All
-          </button>
-        </div>
-
-        <div className="bg-white rounded-[2.5rem] border border-stone-100 shadow-sm overflow-hidden">
-          {MOCK_ORDERS.map((order, i) => (
-            <motion.button
-              key={order.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 * i }}
-              onClick={() => navigate(`/tracking/${order.id}`)}
-              className="w-full flex items-center justify-between p-6 hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0 group"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                  order.status === 'delivered' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'
-                }`}>
-                  {order.status === 'delivered' ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
-                </div>
-                <div className="text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-black text-stone-900 tracking-tight">{order.id}</span>
-                    <span className="text-[10px] font-black px-2 py-0.5 rounded bg-stone-100 text-stone-500 uppercase tracking-widest">
-                      {order.status}
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-400 font-medium">{order.date} • {order.station}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="font-black text-stone-900">${order.total.toFixed(2)}</p>
-                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Total Paid</p>
-                </div>
-                <ChevronRight size={20} className="text-stone-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-              </div>
-            </motion.button>
+              <span className="text-xs font-bold text-black">{cat.name}</span>
+            </button>
           ))}
-        </div>
-      </section>
+        </section>
+
+        {/* Promos / Offers */}
+        <section className="flex gap-4 overflow-x-auto no-scrollbar">
+          {[
+            { title: 'Free delivery on your first order', desc: 'Use code FLASH10', color: 'bg-accent' },
+            { title: 'Save 20% on Premium Fuel', desc: 'Limited time offer', color: 'bg-black text-white' },
+          ].map((promo, i) => (
+            <div key={i} className={cn("min-w-[300px] p-6 rounded-xl flex flex-col justify-between h-40", promo.color)}>
+              <h3 className="text-xl font-bold leading-tight">{promo.title}</h3>
+              <p className="text-sm font-medium opacity-80">{promo.desc}</p>
+            </div>
+          ))}
+        </section>
+
+        {/* Direct Order CTA */}
+        <section className="bg-primary rounded-[2.5rem] p-8 text-white space-y-6 shadow-2xl overflow-hidden relative group">
+          <div className="relative z-10 space-y-4">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter">Need Fuel Now?</h2>
+            <p className="text-white/80 font-medium max-w-xs">Get high-quality fuel delivered to your exact location in minutes.</p>
+            <button 
+              onClick={() => navigate('/order')}
+              className="bg-white text-primary px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl"
+            >
+              Start Order
+            </button>
+          </div>
+          <Fuel className="absolute -right-10 -bottom-10 text-white/10 w-64 h-64 -rotate-12 group-hover:rotate-0 transition-transform duration-700" />
+        </section>
+      </main>
+
+      {/* Bottom Navigation Bar */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-100 px-6 py-3 flex items-center justify-around z-50">
+        <button className="flex flex-col items-center gap-1 text-black">
+          <Fuel size={24} />
+          <span className="text-[10px] font-bold">Home</span>
+        </button>
+        <button 
+          onClick={() => navigate('/order')}
+          className="flex flex-col items-center gap-1 text-stone-400"
+        >
+          <Zap size={24} />
+          <span className="text-[10px] font-bold">Order</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 text-stone-400">
+          <UserIcon size={24} />
+          <span className="text-[10px] font-bold">Account</span>
+        </button>
+      </nav>
     </div>
   );
 }
